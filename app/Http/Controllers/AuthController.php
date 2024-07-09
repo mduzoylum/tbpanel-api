@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\UnauthorizedException;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -14,6 +15,6 @@ class AuthController extends Controller
             return $this->successResponse('Login successful!', ['token' => auth()->user()->createToken(config('app.tb_token'))->plainTextToken]);
         }
 
-        return $this->errorResponse('Invalid credentials!');
+        throw new UnauthorizedException('Invalid credentials!');
     }
 }

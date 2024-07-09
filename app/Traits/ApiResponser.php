@@ -24,9 +24,9 @@ trait ApiResponser
     ): JsonResponse
     {
         return response()->json([
-            'success' => 1,
-            'message' => [$message],
-            'data' => [$data],
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
             'summary' => $summary,
         ], 200);
     }
@@ -58,9 +58,9 @@ trait ApiResponser
     ): JsonResponse
     {
         return response()->json([
-            'success' => 0,
-            'message' => [$message],
-            'data' => [$data],
+            'success' => false,
+            'message' => $message,
+            'data' => $data,
             'summary' => $summary,
         ], 200);
     }

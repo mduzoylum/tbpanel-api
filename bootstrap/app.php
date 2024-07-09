@@ -14,10 +14,18 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: '',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'check.permission'=>CheckPermission::class
+        $middleware->use([
+            'cors' => \App\Http\Middleware\CorsMiddleware::class,
         ]);
-    })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
+
+        $middleware->alias([
+            'check.permission' => CheckPermission::class
+        ]);
+
+
+    })->withSingletons([
+        \Illuminate\Contracts\Debug\ExceptionHandler::class => \App\Exceptions\Handler::class,
+    ])->withExceptions(function (Exceptions $exceptions) {
+
+
     })->create();
