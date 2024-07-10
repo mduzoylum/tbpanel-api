@@ -35,21 +35,18 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            throw new UnauthorizedException('User not found!');
-        }
-
-        $user->sendPasswordResetNotification(Password::broker('users')->createToken($user));
+        $status = Password::broker('users')->sendResetLink(
+            $request->only('email')
+        );
 
         return $this->successResponse(__('auth.password_reset_link_sent'));
     }
 
     public function resetPassword(ResetPasswordRequest $request)
     {
+
         $status = Password::broker('users')->reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $request->only('email','password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
@@ -62,9 +59,9 @@ class AuthController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            return $this->successResponse(__("auth.reset_password_token_error"));
+            throw new UnauthorizedException(__($status));
         }
 
-        return $this->successResponse(__("auth.password_reset_success"));
+        return $this->successResponse(__("auth.reset_password_success"));
     }
 }
