@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-    'tb_token' => env('TB_TOKEN','toptancimburada_token'),
+    'hash_token' => env('HASH_TOKEN','app_hash_token'),
 
     /*
     |--------------------------------------------------------------------------
