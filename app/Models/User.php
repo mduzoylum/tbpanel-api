@@ -50,7 +50,7 @@ class User extends Authenticatable
 
     public function sendPasswordResetNotification($token)
     {
-        $url = config('app.front_url') . '/auth/reset-password?reset_token=' . $token.'&email='.$this->email;
+        $url = config('app.admin_panel') . '/auth/reset-password?reset_token=' . $token.'&email='.$this->email;
         $this->notify(new ResetPasswordNotifications($url));
     }
 }

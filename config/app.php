@@ -124,6 +124,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'front_url' => env('FRONT_URL', 'http://localhost:3000'),
+    'admin_panel' => env('ADMIN_PANEL', 'http://localhost:3000'),
+    'supplier_panel' => env('SUPPLIER_PANEL', 'http://localhost:3001'),
 
 ];
