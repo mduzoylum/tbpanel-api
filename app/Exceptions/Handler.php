@@ -82,7 +82,14 @@ class Handler extends ExceptionHandler
             $message = $exception->getMessage();
         } else {
             $statusCode = 500;
-            $message = 'Beklenmedik hata oluştu';
+            $message = config('app.debug') ? $exception->getMessage() : 'An unexpected error occurred.';
+            if(config('app.debug')) {
+                $errors = [[
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                    'trace' => $exception->getTrace(),
+                ]];
+            }
         }
 
 

@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -28,13 +33,38 @@ class AuthController extends Controller
         throw new UnauthorizedException('Invalid credentials!');
     }
 
-    public function resetPassword(ResetPasswordRequest $request)
+    public function forgotPassword(Request $request)
     {
-
         $user = User::where('email', $request->email)->first();
 
-        $user->sendPasswordResetNotification($user->createToken(config('app.hash_token'), ['*'], now()->addMinutes(config('sanctum.expiration'))->plainTextToken));
+        if (!$user) {
+            throw new UnauthorizedException('User not found!');
+        }
 
-        return $this->successResponse('Password reset email sent!');
+        $user->sendPasswordResetNotification(Password::broker('users')->createToken($user));
+
+        return $this->successResponse(__('auth.password_reset_link_sent'));
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $status = Password::broker('users')->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            return $this->successResponse(__("auth.reset_password_token_error"));
+        }
+
+        return $this->successResponse(__("auth.password_reset_success"));
     }
 }
