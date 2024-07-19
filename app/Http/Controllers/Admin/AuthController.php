@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
+use App\Services\Integrations\IntegrationProviderFactory;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +27,8 @@ class AuthController extends Controller
             $data['permissions'] = !empty(auth()->user()->permissions) ? auth()->user()->permissions->pluck('name') : [];
             $data['token_iat'] = now()->toDateTimeString();
             $data['token_exp'] = now()->addMinutes(config('sanctum.expiration'))->toDateTimeString();
+
+            $data['fdfd'] = IntegrationProviderFactory::create('korgun')->getProducts();
 
             return $this->successResponse('Login successful!', $data);
         }

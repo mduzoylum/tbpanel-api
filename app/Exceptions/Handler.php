@@ -84,11 +84,7 @@ class Handler extends ExceptionHandler
             $statusCode = 500;
             $message = config('app.debug') ? $exception->getMessage() : 'An unexpected error occurred.';
             if(config('app.debug')) {
-                $errors = [[
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'trace' => $exception->getTrace(),
-                ]];
+
             }
         }
 
