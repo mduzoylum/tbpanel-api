@@ -28,8 +28,6 @@ class AuthController extends Controller
             $data['token_iat'] = now()->toDateTimeString();
             $data['token_exp'] = now()->addMinutes(config('sanctum.expiration'))->toDateTimeString();
 
-            $data['fdfd'] = IntegrationProviderFactory::create('korgun')->getProducts();
-
             return $this->successResponse('Login successful!', $data);
         }
 
