@@ -4,6 +4,6 @@ namespace App\Services\Integrations;
 
 interface IntegrationProviderInterface
 {
-    public function getProducts();
+    public function getProducts($params);
 
 }

@@ -2,46 +2,116 @@
 
 namespace App\Services\Integrations;
 
-use Illuminate\Support\Facades\Http;
-use SimpleXMLElement;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
+use App\Models\Brand;
+use App\Models\ProductAttribute;
+use App\Models\ProductGroup;
+use App\Models\ProductType;
+use App\Models\Season;
+use App\Models\Supplier;
+use App\Models\Unit;
 
 class IntegrationProviderAbstract
 {
 
-    public function korgunMocking($endpoint, $data)
+
+    protected function getProductTypeId($code, $name)
     {
-        $data = $endpoint;
+        $productType = ProductType::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name
+        ]);
 
-        $curl = curl_init();
+        return $productType->id;
+    }
 
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'http://fabrika.toptancimburada.com/api/korgun',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => array('method' => $data),
-        ));
+    protected function getProductGroupId($code, $name)
+    {
+        $productGroup = ProductGroup::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name
+        ]);
 
-        $response = curl_exec($curl);
+        return $productGroup->id;
+    }
 
-        curl_close($curl);
+    protected function getSeasonId($code, $name)
+    {
+        $season = Season::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name
+        ]);
 
-        $res = json_decode($response, true);
+        return $season->id;
+    }
 
-        if($res['status']){
-            $data = simplexml_load_string($res['data']['any']);
+    protected function getBrandId($code, $name)
+    {
+        $brand = Brand::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name
+        ]);
 
-            dd($res['data']['any']);
+        return $brand->id;
+    }
 
-            return json_decode(json_encode($data), true)['NewDataSet']['Table'];
+    protected function getSupplierId($code, $name)
+    {
 
-        }else {
-            throw new \Exception($res['message'] ?? 'Error while fetching data from Korgun API');
-        }
+        // TODO company ekle
+        $supplier = Supplier::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name,
+            'surname' => 'Integration',
+            'email' => $code . '@bee.com',
+            'phone' => '0212 123 45 67',
+            'password' => bcrypt(uniqid())
+
+        ]);
+
+        return $supplier->id;
+    }
+
+    protected function getUnitId($name)
+    {
+        $unit = Unit::firstOrCreate([
+            'name' => $name
+        ], [
+            'name' => $name,
+            'unit_quantity' => 1,
+        ]);
+
+        return $unit->id;
+    }
+
+
+    protected function setProductAttribute($productModel, $attrCode, $attrName, $optionCode, $optionName) {
+
+        $attribute = Attribute::firstOrCreate([
+            'code' => $attrCode
+        ], [
+            'name' => $attrName
+        ]);
+
+        $option = AttributeOption::firstOrCreate([
+            'attribute_id' => $attribute->id,
+            'code' => $optionCode
+        ], [
+            'name' => $optionName
+        ]);
+
+        ProductAttribute::updateOrCreate([
+            'product_id' => $productModel->id,
+            'attribute_id' => $attribute->id
+        ], [
+            'attribute_option_id' => $option->id
+        ]);
 
     }
 
