@@ -36,7 +36,7 @@ public function up()
         $table->timestamps();
 
         $table->foreign('unit_id')->references('id')->on('units');
-        $table->foreign('status_id')->references('id')->on('products_status');
+        $table->foreign('status_id')->references('id')->on('products_statuses');
         $table->foreign('supplier_id')->references('id')->on('suppliers');
         $table->foreign('brand_id')->references('id')->on('brands');
         $table->foreign('season_id')->references('id')->on('seasons');
