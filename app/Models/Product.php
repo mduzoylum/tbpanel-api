@@ -71,7 +71,11 @@ class Product extends Model
 
     public function storeStocks()
     {
-        // product_id, store_id, quantity in store_stocks table
         return $this->belongsToMany(Store::class, 'store_stocks')->withPivot('quantity');
+    }
+
+    public function prices()
+    {
+        return $this->hasMany(ProductPrice::class);
     }
 }

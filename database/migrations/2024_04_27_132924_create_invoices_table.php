@@ -23,7 +23,7 @@ public function up()
         $table->timestamps();
 
         $table->foreign('invoice_type_id')->references('id')->on('invoice_types');
-        $table->foreign('account_id')->references('id')->on('account');
+        $table->foreign('account_id')->references('id')->on('accounts');
 
     });
 }

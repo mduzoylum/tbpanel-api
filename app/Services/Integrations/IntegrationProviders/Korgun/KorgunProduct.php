@@ -2,7 +2,9 @@
 
 namespace App\Services\Integrations\IntegrationProviders\Korgun;
 
+use App\Models\PriceField;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Services\Integrations\IntegrationProviderAbstract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -56,6 +58,8 @@ class KorgunProduct extends IntegrationProviderAbstract
             $product['box_items'] = $this->getProductBoxQuantity($product['UrunKodu']);
             $product['items'] = $this->getProductItems($product['UrunKodu']);
 
+            $product['prices'] = $this->getPricesFromProduct($product);
+
             if (is_array($product['items']) && count($product['items']) > 0) {
 
                 $boxProducts = [];
@@ -94,6 +98,7 @@ class KorgunProduct extends IntegrationProviderAbstract
                     }
 
                     $item['StokKodu'] = $stockCode;
+                    $item['prices'] = $this->getPricesFromItem($item);
 
                     $this->setProductToDb(array_merge($product, $item));
 
@@ -150,7 +155,7 @@ class KorgunProduct extends IntegrationProviderAbstract
 
 
         if (isset($product['XKod']) && isset($product['XTanim'])) {
-            $this->setProductAttribute($productModel, 'RENK', 'Renk', $product['XKod'], $product['XTanim']);
+            $this->setProductAttribute($productModel, 'renk', 'Renk', $product['XKod'], $product['XTanim']);
         }
 
         $storeId = $this->getStoreId($product['Location'], $product['Location_Tanim']);
@@ -158,6 +163,19 @@ class KorgunProduct extends IntegrationProviderAbstract
         if (isset($product['store_stocks']) && is_array($product['store_stocks'])) {
             foreach ($product['store_stocks'] as $storeCode => $quantity) {
                 $productModel->storeStocks()->syncWithoutDetaching([$storeId => ['quantity' => $quantity]]);
+            }
+        }
+        if (isset($product['prices']) && is_array($product['prices'])) {
+            foreach ($product['prices'] as $priceType => $price) {
+                $priceFieldId = PriceField::where('code', $priceType)->first()->id;
+                ProductPrice::updateOrCreate([
+                    'product_id' => $productModel->id,
+                    'price_field_id' => $priceFieldId,
+                ], [
+                    'list_price' => $price['price'],
+                    'sale_price' => $price['price'],
+                    'currency' => $price['currency'],
+                ]);
             }
         }
 
@@ -205,6 +223,74 @@ class KorgunProduct extends IntegrationProviderAbstract
         $array = json_decode($json, true);
 
         return isset($array['NewDataSet']['Table']['UrunKodu']) ? [$array['NewDataSet']['Table']] : $array['NewDataSet']['Table'] ?? [];
+    }
+
+    private function getPricesFromProduct($product)
+    {
+        $prices = [
+            'cost_price' => [
+                'price' => $product['Fiyat1'] ?? 0,
+                'currency' => $product['ParaCinsi1'] && is_string($product['ParaCinsi1']) ? $product['ParaCinsi1'] : 'TL',
+            ],
+            'market_cost_price' => [
+                'price' => $product['Fiyat2'] ?? 0,
+                'currency' => $product['ParaCinsi2'] && is_string($product['ParaCinsi2']) ? $product['ParaCinsi2'] : 'TL',
+            ],
+            'online_sale_price' => [
+                'price' => $product['Fiyat3'] ?? 0,
+                'currency' => $product['ParaCinsi3'] && is_string($product['ParaCinsi3']) ? $product['ParaCinsi3'] : 'TL',
+            ],
+            'discounted_online_sale_price' => [
+                'price' => $product['Fiyat4'] ?? 0,
+                'currency' => $product['ParaCinsi4'] && is_string($product['ParaCinsi4']) ? $product['ParaCinsi4'] : 'TL',
+            ],
+            'credit_card_sale_price' => [
+                'price' => $product['Fiyat5'] ?? 0,
+                'currency' => $product['ParaCinsi5'] && is_string($product['ParaCinsi5']) ? $product['ParaCinsi5'] : 'TL',
+            ],
+            'store_card_sale_price' => [
+                'price' => $product['Fiyat6'] ?? 0,
+                'currency' => $product['ParaCinsi6'] && is_string($product['ParaCinsi6']) ? $product['ParaCinsi6'] : 'TL',
+            ],
+        ];
+
+
+        return $prices;
+    }
+
+
+    private function getPricesFromItem($item)
+    {
+        $prices = [
+            'cost_price' => [
+                'price' => $item['Fiyat1'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+            'market_cost_price' => [
+                'price' => $item['Fiyat2'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+            'online_sale_price' => [
+                'price' => $item['Fiyat3'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+            'discounted_online_sale_price' => [
+                'price' => $item['Fiyat4'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+            'credit_card_sale_price' => [
+                'price' => $item['Fiyat5'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+            'store_card_sale_price' => [
+                'price' => $item['Fiyat8'] ?? 0,
+                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            ],
+
+        ];
+
+
+        return $prices;
     }
 
 }

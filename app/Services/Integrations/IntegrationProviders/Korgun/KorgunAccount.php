@@ -50,26 +50,28 @@ class KorgunAccount
 
         foreach ($accounts as $account) {
 
+            var_dump($account);
+
             var_dump("Account: " . $account['Ckod']);
             /** @var Account $accountModel */
             $accountModel = Account::firstOrNew(['code' => $account['Ckod']]);
-            $accountModel->name = $account['Cname'];
-            $accountModel->company = $account['Unvan'];
+            $accountModel->name = is_string($account['Cname']) ? $account['Cname'] : '';
+            $accountModel->company = is_string($account['Unvan']) ? $account['Unvan'] : '';
             $accountModel->address = (is_string($account['Adr1']) ? $account['Adr1'] : '') . ' ' . (is_string($account['Adr2']) ? $account['Adr2'] : '');
-            $accountModel->country = $account['Ulke'];
-            $accountModel->city = $account['Sehir'];
-            $accountModel->town = $account['ilce'];
-            $accountModel->post_code = $account['Pkod'];
-            $accountModel->phone = $account['Tel1'];
-            $accountModel->email = $account['eMail'];
-            $accountModel->tax_number = $account['VNo'];
-            $accountModel->tax_office = $account['VDar'];
-            $accountModel->risk_limit = $account['RiskLimit'];
-            $accountModel->credit_limit = $account['KrediLimit'];
-            $accountModel->discount_rate = $account['iskonto'];
-            $accountModel->currency = $account['DefPc'];
-            $accountModel->identity_number = $account['TCKimlik'];
-            $accountModel->iban = $account['IBAN'];
+            $accountModel->country = is_string($account['Ulke']) ? $account['Ulke'] : null;
+            $accountModel->city = is_string($account['Sehir']) ? $account['Sehir'] : null;
+            $accountModel->town = is_string($account['ilce']) ? $account['ilce'] : null;
+            $accountModel->post_code = is_string($account['Pkod']) ? $account['Pkod'] : '';
+            $accountModel->phone = is_string($account['Tel1']) ? $account['Tel1'] : '';
+            $accountModel->email = is_string($account['eMail']) ? $account['eMail'] : '';
+            $accountModel->tax_number = is_string($account['VNo']) ? $account['VNo'] : '';
+            $accountModel->tax_office =  is_string($account['VDar']) ? $account['VDar'] : '';
+            $accountModel->risk_limit = (int) $account['RiskLimit'];
+            $accountModel->credit_limit = (int) $account['KrediLimit'];
+            $accountModel->discount_rate = (int) $account['iskonto'];
+            $accountModel->currency = is_string($account['DefPc']) ? $account['DefPc'] : '';
+            $accountModel->identity_number = is_string($account['TCKimlik']) ? $account['TCKimlik'] : '';
+            $accountModel->iban = is_string($account['IBAN']) ? $account['IBAN'] : '';
 
             $accountModel->working_method_id = $this->getWorkingMethodId($account['Ozkod3']);
             $accountModel->account_type_id = $this->getAccountTypeId($account['ozkod10']);

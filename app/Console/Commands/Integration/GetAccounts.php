@@ -41,7 +41,8 @@ class GetAccounts extends Command
         while (true) {
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
 
-            Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']]);
+            $endDate = $params['end_date'] > date('Y-m-d H:i:s') ? date('Y-m-d H:i:s') : $params['end_date'];
+            Setting::where('code', 'account_last_updated_at')->update(['value' => $endDate]);
 
             $params['start_date'] = $params['end_date'];
             $params['end_date'] = date('Y-m-d H:i:s', strtotime($params['end_date'] . ' +1 day'));

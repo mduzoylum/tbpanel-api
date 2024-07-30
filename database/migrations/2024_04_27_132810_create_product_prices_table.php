@@ -15,8 +15,8 @@ public function up()
         $table->id();
         $table->float('list_price')->default(0);
         $table->float('sale_price')->default(0);
-        $table->string('currency');
-        $table->smallInteger('tax_rate');
+        $table->string('currency')->nullable();
+        $table->smallInteger('tax_rate')->nullable();
         $table->unsignedBigInteger('product_id');
         $table->unsignedBigInteger('price_field_id');
         $table->timestamps();

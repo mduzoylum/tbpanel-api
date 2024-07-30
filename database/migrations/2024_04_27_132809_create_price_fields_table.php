@@ -13,8 +13,9 @@ public function up()
 {
     Schema::create('price_fields', function (Blueprint $table) {
         $table->id();
+        $table->string('code')->unique();
         $table->string('name');
-        $table->string('county');
+        $table->string('country')->nullable();
         $table->timestamps();
     });
 }

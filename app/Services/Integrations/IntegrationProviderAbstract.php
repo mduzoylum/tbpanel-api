@@ -82,7 +82,7 @@ class IntegrationProviderAbstract
     protected function getUnitId($name)
     {
         $unit = Unit::firstOrCreate([
-            'name' => $name
+            'name' => generate_code_from_name($name)
         ], [
             'name' => $name,
             'unit_quantity' => 1,
