@@ -13,7 +13,7 @@ public function up()
 {
     Schema::create('currency', function (Blueprint $table) {
         $table->id();
-        $table->string('code');
+        $table->string('code')->unique();
         $table->string('name');
         $table->boolean('is_default')->default(false);
         $table->decimal('rate', 10, 6)->default(1.000000);

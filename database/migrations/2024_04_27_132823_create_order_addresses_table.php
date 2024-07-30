@@ -9,20 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
+ public function up()
 {
-    Schema::create('customer_address', function (Blueprint $table) {
+    Schema::create('order_addresses', function (Blueprint $table) {
         $table->id();
+        $table->string('order_type');
         $table->string('address');
         $table->string('company')->nullable();
         $table->string('phone');
-        $table->unsignedBigInteger('customer_id');
+        $table->unsignedBigInteger('order_id');
         $table->unsignedBigInteger('county_id');
         $table->unsignedBigInteger('city_id');
         $table->unsignedBigInteger('town_id');
         $table->timestamps();
 
-        $table->foreign('customer_id')->references('id')->on('customers');
+        $table->foreign('order_id')->references('id')->on('orders');
         $table->foreign('county_id')->references('id')->on('town');
         $table->foreign('city_id')->references('id')->on('cities');
         $table->foreign('town_id')->references('id')->on('town');
@@ -36,6 +37,6 @@ public function up()
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_address');
+        Schema::dropIfExists('order_addresses');
     }
 };

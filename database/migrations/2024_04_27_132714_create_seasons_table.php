@@ -14,7 +14,7 @@ public function up()
     Schema::create('seasons', function (Blueprint $table) {
         $table->id();
         $table->string('name');
-        $table->string('code');
+        $table->string('code')->unique();
         $table->timestamps();
     });
 }

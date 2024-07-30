@@ -13,7 +13,7 @@ public function up()
 {
     Schema::create('town', function (Blueprint $table) {
         $table->id();
-        $table->string('code');
+        $table->string('code')->unique();
         $table->string('name');
         $table->unsignedBigInteger('country_id');
         $table->unsignedBigInteger('city_id');

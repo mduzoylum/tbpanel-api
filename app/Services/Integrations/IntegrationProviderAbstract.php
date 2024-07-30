@@ -9,6 +9,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductGroup;
 use App\Models\ProductType;
 use App\Models\Season;
+use App\Models\Store;
 use App\Models\Supplier;
 use App\Models\Unit;
 
@@ -113,6 +114,18 @@ class IntegrationProviderAbstract
             'attribute_option_id' => $option->id
         ]);
 
+    }
+
+
+    protected function getStoreId($code, $name)
+    {
+        $store = Store::firstOrCreate([
+            'code' => $code
+        ], [
+            'name' => $name
+        ]);
+
+        return $store->id;
     }
 
 }

@@ -13,7 +13,7 @@ public function up()
 {
     Schema::create('suppliers', function (Blueprint $table) {
         $table->id();
-        $table->string('code');
+        $table->string('code')->unique();
         $table->string('name');
         $table->string('surname');
         $table->string('email')->unique();

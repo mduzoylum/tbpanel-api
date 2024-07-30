@@ -33,4 +33,45 @@ class Product extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    public function status()
+    {
+        return $this->belongsTo(AccountStatus::class);
+    }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function season()
+    {
+        return $this->belongsTo(Season::class);
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(ProductType::class);
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(ProductGroup::class);
+    }
+
+    public function storeStocks()
+    {
+        // product_id, store_id, quantity in store_stocks table
+        return $this->belongsToMany(Store::class, 'store_stocks')->withPivot('quantity');
+    }
 }

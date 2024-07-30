@@ -13,7 +13,7 @@ public function up()
 {
     Schema::create('invoices', function (Blueprint $table) {
         $table->id();
-        $table->string('code');
+        $table->string('code')->unique();
         $table->decimal('order_total', 10, 2)->default(0.00);
         $table->decimal('tax_total', 10, 2)->default(0.00);
         $table->string('currency');
