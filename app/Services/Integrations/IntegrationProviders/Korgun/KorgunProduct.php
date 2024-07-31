@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Services\Integrations\IntegrationProviderAbstract;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class KorgunProduct extends IntegrationProviderAbstract
@@ -74,6 +75,8 @@ class KorgunProduct extends IntegrationProviderAbstract
                         $boxProducts[$stockCode] = $item;
                     }
 
+                    $boxProducts[$stockCode]['KoliMiktar'] = $boxProducts[$stockCode]['Miktar'];
+
                     if (isset($boxProducts[$stockCode]['store_stocks'][$item['Location']])) {
                         $boxProducts[$stockCode]['store_stocks'][$item['Location']] += $item['Miktar'];
                     } else {
@@ -86,6 +89,10 @@ class KorgunProduct extends IntegrationProviderAbstract
 
                     $stockCode = $product['UrunKodu'] . '-' . $item['XKod'];
 
+                    if ($item['Birim'] == 'Çift') {
+                        $item['Birim'] = 'Koli';  // çift olan ürünler koli olarak kabul edilecek
+                    }
+
                     if (isset($boxProducts[$stockCode])) {
                         $boxProducts[$stockCode]['KoliMiktar'] = $item['Miktar'];
                     }
@@ -93,12 +100,8 @@ class KorgunProduct extends IntegrationProviderAbstract
 
                 foreach ($boxProducts as $stockCode => $item) {
 
-                    if ($item['Birim'] == 'Çift') {
-                        $item['Birim'] = 'Koli';  // çift olan ürünler koli olarak kabul edilecek
-                    }
-
                     $item['StokKodu'] = $stockCode;
-                    $item['prices'] = $this->getPricesFromItem($item);
+                    $item['prices'] = $this->getPricesFromItem($product, $item);
 
                     $this->setProductToDb(array_merge($product, $item));
 
@@ -126,11 +129,11 @@ class KorgunProduct extends IntegrationProviderAbstract
         $productModel->model_code = $product['UrunKodu'];
 
         if (isset($product['ParaCinsi']) && is_string($product['ParaCinsi']) && trim($product['ParaCinsi']) != '') {
-            $productModel->currency = $product['ParaCinsi'];
+            $productModel->currency = currency_map($product['ParaCinsi']);
         } else if (isset($product['ParaCinsi1']) && is_string($product['ParaCinsi1']) && trim($product['ParaCinsi1']) != '') {
-            $productModel->currency = $product['ParaCinsi1'];
+            $productModel->currency = currency_map($product['ParaCinsi1']);
         } else {
-            $productModel->currency = 'TL';
+            $productModel->currency = currency_map('TL');
         }
 
         $productModel->name = $product['UrunTanimi'];
@@ -147,8 +150,18 @@ class KorgunProduct extends IntegrationProviderAbstract
         $productModel->quantity = $product['KoliMiktar'] ?? 0;
         $productModel->created_at = $product['KartTarihi'] ? Carbon::parse($product['KartTarihi']) : Carbon::now();
 
-        if (($productModel->quantity > 0 && $product['Miktar'] > 0)) {
+        if ($product['Miktar'] > 0 && $product['KoliMiktar'] > 0) {
             $productModel->box_quantity = $product['Miktar'] / $product['KoliMiktar'];
+        } else if($product['KoliMiktar'] == 0 && isset($product['XKod']) && !empty($product['XKod'])) {
+            $row = DB::table('box_quantities')
+                ->where('stock_code', $product['StokKodu'])
+                ->where('color_code', $product['XKod'])
+                ->where('box_quantity', '>', 0)
+                ->first();
+
+            if($row) {
+                $productModel->box_quantity = $row->box_quantity;
+            }
         }
 
         $productModel->save();
@@ -228,29 +241,29 @@ class KorgunProduct extends IntegrationProviderAbstract
     private function getPricesFromProduct($product)
     {
         $prices = [
-            'cost_price' => [
-                'price' => $product['Fiyat1'] ?? 0,
-                'currency' => $product['ParaCinsi1'] && is_string($product['ParaCinsi1']) ? $product['ParaCinsi1'] : 'TL',
-            ],
-            'market_cost_price' => [
-                'price' => $product['Fiyat2'] ?? 0,
-                'currency' => $product['ParaCinsi2'] && is_string($product['ParaCinsi2']) ? $product['ParaCinsi2'] : 'TL',
-            ],
             'online_sale_price' => [
-                'price' => $product['Fiyat3'] ?? 0,
-                'currency' => $product['ParaCinsi3'] && is_string($product['ParaCinsi3']) ? $product['ParaCinsi3'] : 'TL',
+                'price' => $product['Fiyat1'] ?? 0,
+                'currency' => currency_map($product['ParaCinsi1'] && is_string($product['ParaCinsi1']) ? $product['ParaCinsi1'] : 'TL'),
             ],
             'discounted_online_sale_price' => [
-                'price' => $product['Fiyat4'] ?? 0,
-                'currency' => $product['ParaCinsi4'] && is_string($product['ParaCinsi4']) ? $product['ParaCinsi4'] : 'TL',
+                'price' => $product['Fiyat2'] ?? 0,
+                'currency' => currency_map($product['ParaCinsi2'] && is_string($product['ParaCinsi2']) ? $product['ParaCinsi2'] : 'TL'),
             ],
             'credit_card_sale_price' => [
-                'price' => $product['Fiyat5'] ?? 0,
-                'currency' => $product['ParaCinsi5'] && is_string($product['ParaCinsi5']) ? $product['ParaCinsi5'] : 'TL',
+                'price' => $product['Fiyat4'] ?? 0,
+                'currency' => currency_map($product['ParaCinsi4'] && is_string($product['ParaCinsi4']) ? $product['ParaCinsi4'] : 'TL'),
             ],
-            'store_card_sale_price' => [
+            'market_cost_price' => [
+                'price' => $product['Fiyat5'] ?? 0,
+                'currency' => currency_map($product['ParaCinsi5'] && is_string($product['ParaCinsi5']) ? $product['ParaCinsi5'] : 'TL'),
+            ],
+            'cost_price' => [
                 'price' => $product['Fiyat6'] ?? 0,
-                'currency' => $product['ParaCinsi6'] && is_string($product['ParaCinsi6']) ? $product['ParaCinsi6'] : 'TL',
+                'currency' => currency_map($product['ParaCinsi6'] && is_string($product['ParaCinsi6']) ? $product['ParaCinsi6'] : 'TL'),
+            ],
+            'store_sale_price' => [
+                'price' => $product['Fiyat7'] ?? 0,
+                'currency' => currency_map($product['ParaCinsi7'] && is_string($product['ParaCinsi7']) ? $product['ParaCinsi7'] : 'TL'),
             ],
         ];
 
@@ -259,34 +272,34 @@ class KorgunProduct extends IntegrationProviderAbstract
     }
 
 
-    private function getPricesFromItem($item)
+    private function getPricesFromItem($product, $item)
     {
+        $currency = currency_map($item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL');
         $prices = [
-            'cost_price' => [
-                'price' => $item['Fiyat1'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
-            ],
-            'market_cost_price' => [
-                'price' => $item['Fiyat2'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
-            ],
             'online_sale_price' => [
-                'price' => $item['Fiyat3'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+                'price' => $item['Fiyat1'] ?? 0,
+                'currency' => $currency,
             ],
             'discounted_online_sale_price' => [
-                'price' => $item['Fiyat4'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+                'price' => $item['Fiyat2'] ?? 0,
+                'currency' => $currency
             ],
             'credit_card_sale_price' => [
+                'price' => $item['Fiyat4'] ?? 0,
+                'currency' => $currency
+            ],
+            'market_cost_price' => [
                 'price' => $item['Fiyat5'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+                'currency' => $currency
             ],
-            'store_card_sale_price' => [
-                'price' => $item['Fiyat8'] ?? 0,
-                'currency' => $item['ParaCinsi'] && is_string($item['ParaCinsi']) ? $item['ParaCinsi'] : 'TL',
+            'cost_price' => [
+                'price' => $product['Fiyat6'] ?? 0,
+                'currency' => $currency
             ],
-
+            'store_sale_price' => [
+                'price' => $product['Fiyat7'] ?? 0,
+                'currency' => $currency
+            ],
         ];
 
 

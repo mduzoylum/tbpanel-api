@@ -11,7 +11,7 @@ return new class extends Migration
      */
 public function up()
 {
-    Schema::create('currency_history', function (Blueprint $table) {
+    Schema::create('currency_histories', function (Blueprint $table) {
         $table->id();
         $table->date('date');
         $table->decimal('rate', 10, 6)->default(1.000000);
@@ -30,6 +30,6 @@ public function up()
      */
     public function down(): void
     {
-        Schema::dropIfExists('currency_history');
+        Schema::dropIfExists('currency_histories');
     }
 };

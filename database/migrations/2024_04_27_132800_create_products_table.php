@@ -25,7 +25,7 @@ public function up()
         $table->float('sale_price')->default(0);
         $table->string('currency');
         $table->string('barcode')->nullable();
-        $table->smallInteger('tax_rate');
+        $table->float('tax_rate');
         $table->unsignedBigInteger('status_id')->nullable();
         $table->unsignedBigInteger('unit_id');
         $table->unsignedBigInteger('supplier_id');

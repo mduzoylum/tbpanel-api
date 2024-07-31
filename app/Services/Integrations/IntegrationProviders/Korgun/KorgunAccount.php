@@ -69,7 +69,7 @@ class KorgunAccount
             $accountModel->risk_limit = (int) $account['RiskLimit'];
             $accountModel->credit_limit = (int) $account['KrediLimit'];
             $accountModel->discount_rate = (int) $account['iskonto'];
-            $accountModel->currency = is_string($account['DefPc']) ? $account['DefPc'] : '';
+            $accountModel->currency = is_string($account['DefPc']) ? currency_map($account['DefPc']) : '';
             $accountModel->identity_number = is_string($account['TCKimlik']) ? $account['TCKimlik'] : '';
             $accountModel->iban = is_string($account['IBAN']) ? $account['IBAN'] : '';
 

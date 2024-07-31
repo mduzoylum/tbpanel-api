@@ -6,7 +6,7 @@ use App\Models\Setting;
 use App\Services\Integrations\IntegrationProviderFactory;
 use Illuminate\Console\Command;
 
-class GetAccounts extends Command
+class GetAll extends Command
 {
     /**
      * The name and signature of the console command.
@@ -27,10 +27,10 @@ class GetAccounts extends Command
      */
     public function handle()
     {
-        $startDate = Setting::where('code', 'account_last_updated_at')->first()->value;
+        $startDate = Setting::where('code', 'integration_last_updated_at')->first()->value;
 
         if($startDate == null) {
-            throw new \Exception('account_last_updated_at setting not found');
+            throw new \Exception('integration_last_updated_at setting not found');
         }
 
         $params = [
@@ -44,9 +44,11 @@ class GetAccounts extends Command
                 $params['end_date'] = date('Y-m-d H:i:s');
             }
 
+            IntegrationProviderFactory::create('korgun')->getProducts($params);
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
+            IntegrationProviderFactory::create('korgun')->getOrders($params);
 
-            Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']]);
+            Setting::where('code', 'integration_last_updated_at')->update(['value' => $params['end_date']]);
 
             $params['start_date'] = $params['end_date'];
             $params['end_date'] = date('Y-m-d H:i:s', strtotime($params['end_date'] . ' +1 day'));

@@ -16,7 +16,7 @@ public function up()
         $table->string('product_name');
         $table->float('list_price')->default(0);
         $table->float('sale_price')->default(0);
-        $table->smallInteger('tax_rate');
+        $table->float('tax_rate');
         $table->integer('quantity')->default(0);
         $table->unsignedBigInteger('order_id');
         $table->unsignedBigInteger('product_id');

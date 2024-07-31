@@ -39,10 +39,14 @@ class GetProducts extends Command
         ];
 
         while (true) {
-            IntegrationProviderFactory::create('korgun')->getProducts($params);
+            if($params['end_date'] > date('Y-m-d H:i:s')) {
+                $params['end_date'] = date('Y-m-d H:i:s');
+            }
 
-            $endDate = $params['end_date'] > date('Y-m-d H:i:s') ? date('Y-m-d H:i:s') : $params['end_date'];
-            Setting::where('code', 'product_last_updated_at')->update(['value' => $endDate]);
+            var_dump("Start Date : " . $params['start_date']);
+
+            IntegrationProviderFactory::create('korgun')->getProducts($params);
+            Setting::where('code', 'product_last_updated_at')->update(['value' => $params['end_date']]);
 
             $params['start_date'] = $params['end_date'];
             $params['end_date'] = date('Y-m-d H:i:s', strtotime($params['end_date'] . ' +1 day'));

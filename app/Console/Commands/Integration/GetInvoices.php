@@ -6,14 +6,14 @@ use App\Models\Setting;
 use App\Services\Integrations\IntegrationProviderFactory;
 use Illuminate\Console\Command;
 
-class GetAccounts extends Command
+class GetInvoices extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:get-accounts';
+    protected $signature = 'app:get-invoices';
 
     /**
      * The console command description.
@@ -27,10 +27,10 @@ class GetAccounts extends Command
      */
     public function handle()
     {
-        $startDate = Setting::where('code', 'account_last_updated_at')->first()->value;
+        $startDate = Setting::where('code', 'invoice_last_updated_at')->first()->value;
 
         if($startDate == null) {
-            throw new \Exception('account_last_updated_at setting not found');
+            throw new \Exception('invoice_last_updated_at setting not found');
         }
 
         $params = [
@@ -38,15 +38,13 @@ class GetAccounts extends Command
             "end_date" => date('Y-m-d H:i:s', strtotime($startDate. ' +1 day'))
         ];
 
-
         while (true) {
             if($params['end_date'] > date('Y-m-d H:i:s')) {
                 $params['end_date'] = date('Y-m-d H:i:s');
             }
 
-            IntegrationProviderFactory::create('korgun')->getAccounts($params);
-
-            Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']]);
+            IntegrationProviderFactory::create('korgun')->getInvoices($params);
+            Setting::where('code', 'invoice_last_updated_at')->update(['value' => $params['end_date']]);
 
             $params['start_date'] = $params['end_date'];
             $params['end_date'] = date('Y-m-d H:i:s', strtotime($params['end_date'] . ' +1 day'));

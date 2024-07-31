@@ -16,12 +16,15 @@ public function up()
         $table->string('code')->unique();
         $table->decimal('order_total', 10, 2)->default(0.00);
         $table->decimal('tax_total', 10, 2)->default(0.00);
+        $table->decimal('discount_total', 10, 2)->default(0.00);
+        $table->decimal('cargo_total', 10, 2)->default(0.00);
         $table->string('currency');
-        $table->integer('product_count')->default(0);
-        $table->unsignedBigInteger('customer_id');
+        $table->unsignedBigInteger('customer_id')->nullable();
+        $table->unsignedBigInteger('account_id')->nullable();
         $table->timestamps();
 
         $table->foreign('customer_id')->references('id')->on('customers');
+        $table->foreign('account_id')->references('id')->on('accounts');
     });
 }
 
