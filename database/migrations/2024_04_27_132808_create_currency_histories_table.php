@@ -19,8 +19,8 @@ public function up()
         $table->unsignedBigInteger('default_currency_id');
         $table->timestamps();
 
-        $table->foreign('currency_id')->references('id')->on('currency');
-        $table->foreign('default_currency_id')->references('id')->on('currency');
+        $table->foreign('currency_id')->references('id')->on('currencies');
+        $table->foreign('default_currency_id')->references('id')->on('currencies');
     });
 }
 
