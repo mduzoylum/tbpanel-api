@@ -28,7 +28,7 @@ trait ApiResponser
         $data = $data->toArray();
         $response = [
             'data' => $resource,
-            'pagination' => [
+            'paging' => [
                 'total' => $data["total"],
                 'limit' => $data["per_page"],
                 'current_page' => $data["current_page"],
