@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Resources\LoginResource;
 use App\Models\User;
 use App\Services\Integrations\IntegrationProviderFactory;
 use Illuminate\Auth\Events\PasswordReset;
@@ -22,13 +23,7 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (auth()->attempt($credentials)) {
-            $data = auth()->user()->only('id', 'name', 'surname', 'email');
-            $data['token'] = auth()->user()->createToken(config('app.hash_token'), ['*'], now()->addMinutes(config('sanctum.expiration')))->plainTextToken;
-            $data['permissions'] = !empty(auth()->user()->permissions) ? auth()->user()->permissions->pluck('name') : [];
-            $data['token_iat'] = now()->toDateTimeString();
-            $data['token_exp'] = now()->addMinutes(config('sanctum.expiration'))->toDateTimeString();
-
-            return $this->successResponse('Login successful!', $data);
+            return new LoginResource(auth()->user());
         }
 
         throw new UnauthorizedException('Invalid credentials!');

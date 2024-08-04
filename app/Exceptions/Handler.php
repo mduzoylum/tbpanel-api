@@ -35,14 +35,14 @@ class Handler extends ExceptionHandler
      *
      * This method is called by the exception dispatcher.
      *
-     * @param  \Throwable  $exception
+     * @param \Throwable $exception
      * @return void
      */
-    public function report(Throwable $exception)
+    public function report(Throwable $e)
     {
-        if ($this->shouldReport($exception)) {
+        if ($this->shouldReport($e)) {
             // Log the exception using Laravel's logging system
-            Log::error($exception->getMessage(), ['exception' => $exception]);
+            Log::error($e->getMessage(), ['exception' => $e]);
 
             // Optionally, send the exception to an external reporting service
             // ... (Add code for external reporting)
@@ -54,46 +54,58 @@ class Handler extends ExceptionHandler
      *
      * This method is called after the report method.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Throwable  $exception
-     * @return \Illuminate\Http\JsonResponse
+     * @param \Illuminate\Http\Request $request
+     * @param \Throwable $exception
+     * @return \Illuminate\Http\JsonResponse|null
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Throwable $e)
     {
-        if (in_array($exception, $this->dontReport)) {
-            return;
+        if (in_array($e, $this->dontReport)) {
+            return null;
         }
 
-        if ($exception instanceof UnauthorizedException) {
+        if ($e instanceof UnauthorizedException) {
             $statusCode = 403;
-            $message =  $exception->getMessage() ?: 'Unauthorized.';
-        } elseif ($exception instanceof ValidationException) {
+            $message = $e->getMessage() ?: 'Unauthorized.';
+        } elseif ($e instanceof ValidationException) {
             $statusCode = 422;
-            $message = $exception->getMessage() ?: 'Validation failed.';
-            $errors = $exception->errors();
-        }elseif ($exception instanceof ModelNotFoundException) {
+            $message = $e->getMessage() ?: 'Validation failed.';
+
+            // errors as array
+            $validations = $e->errors();
+
+            $errors = collect($validations)->map(function ($error, $key) {
+                    return [
+                        'field' => $key,
+                        'messages' => $error
+                    ];
+                })->values()->all();
+        } elseif ($e instanceof ModelNotFoundException) {
             $statusCode = 404;
-            $message = $exception->getMessage() ?: 'The requested resource could not be found.';
-        } elseif ($exception instanceof AuthenticationException) {
+            $message = $e->getMessage() ?: 'The requested resource could not be found.';
+        } elseif ($e instanceof AuthenticationException) {
             $statusCode = 401;
-            $message = $exception->getMessage() ?: 'Invalid login credentials.';
-        } elseif ($exception instanceof HttpException) {
-            $statusCode = $exception->getStatusCode();
-            $message = $exception->getMessage();
+            $message = $e->getMessage() ?: 'Invalid login credentials.';
+        } elseif ($e instanceof HttpException) {
+            $statusCode = $e->getStatusCode();
+            $message = $e->getMessage();
         } else {
             $statusCode = 500;
-            $message = config('app.debug') ? $exception->getMessage() : 'An unexpected error occurred.';
-            if(config('app.debug')) {
+            $message = config('app.debug') ? $e->getMessage() : 'An unexpected error occurred.';
 
+            if (config('app.debug')) {
+                $errors = [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
+                ];
             }
         }
 
 
         return response()->json([
-            'success' => false,
             'message' => $message,
-            'data' => ['errors' => $errors ?? []],
-            'summary' => null,
+            'errors' => $errors ?? []
         ], $statusCode);
 
     }

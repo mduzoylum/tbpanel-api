@@ -13,7 +13,7 @@ class GetAll extends Command
      *
      * @var string
      */
-    protected $signature = 'app:get-accounts';
+    protected $signature = 'app:get-all';
 
     /**
      * The console command description.

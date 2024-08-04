@@ -4,10 +4,39 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\Paginator;
 
 trait ApiResponser
 {
+
+
+
+    /**
+     * Build success response
+     *
+     * @param JsonResource $resource
+     * @param Paginator $data
+     * @return JsonResponse
+     */
+    public function paginateResponse(
+        $resource = null,
+        $data = null
+    ): JsonResponse
+    {
+        $data = $data->toArray();
+        $response = [
+            'data' => $resource,
+            'pagination' => [
+                'total' => $data["total"],
+                'limit' => $data["per_page"],
+                'current_page' => $data["current_page"],
+                'total_pages' => $data["last_page"],
+            ],
+        ];
+        return response()->json($response, 200);
+    }
 
     /**
      * Build success response
@@ -18,16 +47,11 @@ trait ApiResponser
      * @return JsonResponse
      */
     public function successResponse(
-        $message = null,
-        $data = null,
-        $summary = null
+        $message = null
     ): JsonResponse
     {
         return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => $data,
-            'summary' => $summary,
+            'message' => $message
         ], 200);
     }
 
