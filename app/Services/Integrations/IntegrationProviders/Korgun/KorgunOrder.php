@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderFailLog;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class KorgunOrder
@@ -95,6 +96,8 @@ class KorgunOrder
                 $orderModel->tax_total += $invoiceItem['KDVTutar'];
                 $orderModel->discount_total += $invoiceItem['iskTutar'] ?? 0;
                 $orderModel->currency = currency_map($invoiceItem['har_ParaCinsi']);
+
+                $orderModel->created_at = $invoiceItem['fattar'] ? Carbon::parse($invoiceItem['fattar']) : Carbon::now();
 
                 if ($invoiceItem['skod'] == 'XXXXUlasim') {
                     $orderModel->cargo_total = $invoiceItem['Tutar'];

@@ -9,11 +9,10 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
+ public function up()
 {
-    Schema::create('invoice_details', function (Blueprint $table) {
+    Schema::create('order_products', function (Blueprint $table) {
         $table->id();
-        $table->string('product_name');
         $table->float('list_price')->default(0);
         $table->float('sale_price')->default(0);
         $table->float('tax_rate');
@@ -24,14 +23,16 @@ public function up()
 
         $table->foreign('order_id')->references('id')->on('orders');
         $table->foreign('product_id')->references('id')->on('products');
+
     });
 }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoice_details');
+        Schema::dropIfExists('order_products');
     }
 };

@@ -23,9 +23,9 @@ class UsersTableSeeder extends Seeder
             'name' => 'Toptancım',
             'surname' => 'Burada',
             'phone' => '1234567890',
-            'email' => 'admin@tb.com',
+            'email' => 'fatihdemir178@gmail.com',
             'email_verified_at' => now(),
-            'password' => Hash::make('123'),
+            'password' => Hash::make('123456'),
             'remember_token' => Str::random(10),
             'created_at' => now(),
             'updated_at' => now()

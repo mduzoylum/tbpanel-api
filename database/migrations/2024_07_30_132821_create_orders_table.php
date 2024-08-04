@@ -11,24 +11,20 @@ return new class extends Migration
      */
 public function up()
 {
-    Schema::create('invoices', function (Blueprint $table) {
+    Schema::create('orders', function (Blueprint $table) {
         $table->id();
         $table->string('code')->unique();
-        $table->decimal('amount_total', 10, 2)->default(0.00);
+        $table->decimal('order_total', 10, 2)->default(0.00);
         $table->decimal('tax_total', 10, 2)->default(0.00);
         $table->decimal('discount_total', 10, 2)->default(0.00);
+        $table->decimal('cargo_total', 10, 2)->default(0.00);
         $table->string('currency');
-        $table->unsignedBigInteger('invoice_type_id');
-        $table->string('invoice_type_code');
+        $table->unsignedBigInteger('customer_id')->nullable();
         $table->unsignedBigInteger('account_id')->nullable();
-        $table->string('account_code')->nullable();
-        $table->string('store_code')->nullable();
-        $table->string('seller_code')->nullable();
         $table->timestamps();
 
-        $table->foreign('invoice_type_id')->references('id')->on('invoice_types');
+        $table->foreign('customer_id')->references('id')->on('customers');
         $table->foreign('account_id')->references('id')->on('accounts');
-
     });
 }
 
@@ -38,6 +34,6 @@ public function up()
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoices');
+        Schema::dropIfExists('orders');
     }
 };

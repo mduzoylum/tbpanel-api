@@ -39,7 +39,7 @@ class PriceFieldsTableSeeder extends Seeder
         ]);
 
         PriceField::firstOrCreate([
-            'code' => 'store_card_sale_price',
+            'code' => 'store_sale_price',
             'name' => 'Mağaza Satış Fiyatı'
         ]);
 
