@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
+ *
+ *
  * @property string $stock_code
  * @property string $name
  * @property string $description
@@ -28,6 +30,47 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $season_id
  * @property int $type_id
  * @property int $group_id
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Brand $brand
+ * @property-read \App\Models\ProductGroup $group
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductPrice> $prices
+ * @property-read int|null $prices_count
+ * @property-read \App\Models\Season $season
+ * @property-read \App\Models\AccountStatus|null $status
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Store> $storeStocks
+ * @property-read int|null $store_stocks_count
+ * @property-read \App\Models\Supplier $supplier
+ * @property-read \App\Models\ProductType $type
+ * @property-read \App\Models\Unit $unit
+ * @method static \Illuminate\Database\Eloquent\Builder|Product newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Product newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Product query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereBarcode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereBoxQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereBrandId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereBuyingPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereGroupId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereListPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereModelCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereSalePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereSeasonId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereStatusId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereStockCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereSupplierId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereTargetQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereTaxRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereUnitId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class Product extends Model
 {
