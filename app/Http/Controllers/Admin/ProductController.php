@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function get(Request $request)
     {
 
-        $data = Product::paginatefdsafasd(10);
+        $data = Product::paginate(10);
 
         return $this->paginateResponse(ProductResource::collection($data), $data);
     }
