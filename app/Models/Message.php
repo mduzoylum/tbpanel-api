@@ -28,4 +28,5 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
+    public $fillable = ['message', 'user_type', 'user_id'];
 }
