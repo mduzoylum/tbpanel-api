@@ -9,11 +9,15 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-
     public function get(Request $request)
     {
+        $query = Product::query();
 
-        $data = Product::paginate(10);
+        if($request->has('search')){
+            $query->where('name', 'like', '%'.$request->get('search').'%');
+        }
+
+        $data = $query->with(['attributes', 'unit', 'status', 'prices'])->paginate($request->get('limit', 10));
 
         return $this->paginateResponse(ProductResource::collection($data), $data);
     }

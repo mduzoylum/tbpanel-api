@@ -119,6 +119,15 @@ class Product extends Model
 
     public function prices()
     {
-        return $this->hasMany(ProductPrice::class);
+        return $this->hasMany(ProductPrice::class)->with('priceField');
+    }
+
+    public function attributes()
+    {
+
+        // get attributes with attribute name and option name
+        return $this->hasMany(ProductAttribute::class)->with('attribute', 'attributeOption');
+
+        return $this->hasMany(ProductAttribute::class);
     }
 }

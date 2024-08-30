@@ -13,7 +13,10 @@ use SoapClient;
 class Korgun implements IntegrationProviderInterface
 {
 
-    private $wsdl = "http://5.26.216.37:2001/KorgunWebService.asmx?WSDL";
+    private $wsdlOld = "http://5.26.216.37:2001/KorgunWebService.asmx?WSDL";
+    private $wsdl = "http://5.250.254.249:2001/KorgunWebService.asmx?WSDL";
+
+
     private $client;
 
     public function __construct()
