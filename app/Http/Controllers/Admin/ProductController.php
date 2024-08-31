@@ -11,13 +11,7 @@ class ProductController extends Controller
 {
     public function get(Request $request)
     {
-        $query = Product::query();
-
-        if($request->has('search')){
-            $query->where('name', 'like', '%'.$request->get('search').'%');
-        }
-
-        $data = $query->with(['attributes', 'unit', 'status', 'prices'])->paginate($request->get('limit', 10));
+        $data = Product::search()->with(['attributes', 'unit', 'status', 'prices'])->paginate($request->get('limit', 10));
 
         return $this->paginateResponse(ProductResource::collection($data), $data);
     }

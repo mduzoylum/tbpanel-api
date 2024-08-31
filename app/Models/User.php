@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\ResetPasswordNotifications;
+use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -42,11 +43,12 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereSurname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User search(?string $searchTerm = null, ?array $searchableColumns = null)
  * @mixin \Eloquent
  */
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, Searchable;
 
     protected $fillable = [
         'name',
@@ -55,6 +57,18 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
+    ];
+
+    protected $searchable = [
+        'name',
+        'surname',
+        'phone',
+        'email',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     public function __construct(array $attributes = [])

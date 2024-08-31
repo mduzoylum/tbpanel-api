@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -70,12 +71,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Product whereTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Product whereUnitId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Product whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Product search($value = null, $searchableColumns = null)
  * @mixin \Eloquent
  */
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
     protected $guarded = [];
+
+    protected $searchable = [
+        'name',
+        'description',
+        'model_code',
+        'stock_code',
+        'barcode',
+    ];
 
     public function status()
     {
@@ -127,7 +137,5 @@ class Product extends Model
 
         // get attributes with attribute name and option name
         return $this->hasMany(ProductAttribute::class)->with('attribute', 'attributeOption');
-
-        return $this->hasMany(ProductAttribute::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -35,11 +36,23 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|Supplier wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Supplier whereSurname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Supplier whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Supplier search(?string $searchTerm = null, ?array $searchableColumns = null)
  * @mixin \Eloquent
  */
 class Supplier extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, Searchable;
 
     protected $guarded = [];
+
+    protected $searchable = [
+        'name',
+        'surname',
+        'email',
+        'phone',
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
 }
