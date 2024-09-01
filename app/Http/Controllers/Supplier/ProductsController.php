@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-    public function get(Request $request, ProductFilter $filter)
+    public function get(ProductFilter $filter, Request $request)
     {
         $query = Product::query();
         $query->where('supplier_id', auth()->user()->id);
