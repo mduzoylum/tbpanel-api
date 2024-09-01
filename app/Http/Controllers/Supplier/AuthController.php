@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Http\Resources\LoginResource;
+use App\Http\Resources\Supplier\LoginResource;
 use App\Models\User;
 use App\Services\Integrations\IntegrationProviderFactory;
 use Illuminate\Auth\Events\PasswordReset;
@@ -20,7 +20,7 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request)
     {
-          $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
         if (auth()->guard('supplier')->attempt($credentials)) {
             return new LoginResource(auth()->guard('supplier')->user());
@@ -28,6 +28,7 @@ class AuthController extends Controller
 
         throw new UnauthorizedException('Invalid credentials!');
     }
+
 
     public function forgotPassword(Request $request)
     {
@@ -42,7 +43,7 @@ class AuthController extends Controller
     {
 
         $status = Password::broker('users')->reset(
-            $request->only('email','password', 'password_confirmation', 'token'),
+            $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
