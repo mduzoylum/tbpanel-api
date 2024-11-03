@@ -39,11 +39,25 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Invoice whereStoreCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Invoice whereTaxTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Invoice whereUpdatedAt($value)
- * @mixin \Eloquent
  */
 class Invoice extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function invoiceType()
+    {
+        return $this->belongsTo(InvoiceType::class);
+    }
+
+    public function details()
+    {
+        return $this->hasMany(InvoiceDetail::class);
+    }
 }

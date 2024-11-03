@@ -23,12 +23,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AttributeOption whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AttributeOption whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AttributeOption whereUpdatedAt($value)
- * @mixin \Eloquent
  */
 class AttributeOption extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
+
+    public function attribute()
+    {
+        return $this->belongsTo(Attribute::class);
+    }
 
 }

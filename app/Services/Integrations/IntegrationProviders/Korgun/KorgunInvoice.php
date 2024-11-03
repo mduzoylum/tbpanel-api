@@ -3,6 +3,7 @@
 namespace App\Services\Integrations\IntegrationProviders\Korgun;
 
 use App\Models\Account;
+use App\Models\AttributeOption;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use App\Models\InvoiceType;
@@ -80,25 +81,39 @@ class KorgunInvoice
             $data[$invoice['faturano']]['amount_total'] += $invoice['Tutar'] ?? 0;
             $data[$invoice['faturano']]['tax_total'] += $invoice['KDVTutar'] ?? 0;
             $data[$invoice['faturano']]['discount_total'] += $invoice['iskTutar'] ?? 0;
+
+            if (!isset($data[$invoice['faturano']]['details'])) {
+                $data[$invoice['faturano']]['details'] = [];
+            }
+
+            $productTempCode = $invoice['skod'] .'-' . $invoice['rkod'] ?? '';
+
+            if (!isset($data[$invoice['faturano']]['details'][$productTempCode])) {
+                $data[$invoice['faturano']]['details'][$productTempCode] = $invoice;
+                $data[$invoice['faturano']]['details'][$productTempCode]['Miktar'] = 0;
+            }
+
+            $data[$invoice['faturano']]['details'][$productTempCode]['Miktar'] += $invoice['Miktar'] ?? 0;
         }
 
         foreach ($data as $invoice) {
 
 
-
-
-
             var_dump("Fatura: " . $invoice['faturano']);
             var_dump($invoice);
 
-            $invoiceType =    InvoiceType::firstOrCreate([
+            $invoiceType = InvoiceType::firstOrCreate([
                 'code' => $invoice['FaturaTip']
-            ],[
+            ], [
                 'name' => $invoice['FaturaTip'],
                 'code' => $invoice['FaturaTip']
             ]);
 
-            $invoiceModel = Invoice::firstOrCreate([
+            if(Invoice::where('code', $invoice['faturano'])->exists()){
+                continue;
+            }
+
+            $invoiceModel = Invoice::create([
                 'code' => $invoice['faturano']
             ], [
                 'code' => $invoice['faturano'],
@@ -115,21 +130,54 @@ class KorgunInvoice
                 'seller_code' => !empty($invoice['Satici']) ? $invoice['Satici'] : '',
             ]);
 
-            InvoiceDetail::firstOrCreate([
-                'invoice_id' => $invoiceModel->id,
-                'product_code' => $invoice['skod'] ?? ""
-            ], [
-                'invoice_id' => $invoiceModel->id,
-                'product_code' => $invoice['skod'] ?? "",
-                'quantity' => $invoice['miktar'] ?? 0,
-                'unit_name' => $invoice['Birim'] ?? "",
-                'price' => $invoice['fiyat'] ?? 0,
-                'tax_rate' => $invoice['KDVORAN'] ?? 0,
-                'currency' => currency_map($invoice['har_ParaCinsi'] ?? 'TRY'),
-                'amount_total' => $invoice['Tutar'] ?? 0,
-                'tax_total' => $invoice['KDVTutar'] ?? 0,
-                'discount_total' => $invoice['iskTutar'] ?? 0,
-            ]);
+            foreach ($invoice['details'] as $item) {
+
+                if (isset($invoice['rkod']) && !empty($invoice['rkod'])) {
+
+                    $attributeOption = AttributeOption::where('code', $invoice['rkod'])
+                        ->whereHas('attribute', function ($query) {
+                            $query->where('code', 'renk');
+                        })->first();
+
+                    if (!$attributeOption) {
+                        $invoiceModel->details()->delete();
+                        $invoiceModel->delete();
+
+                        break;
+                    }
+
+                    $product = Product::where('model_code', $invoice['skod'])
+                        ->whereHas('attributes', function ($query) use ($attributeOption) {
+                            $query->where('attribute_option_id', $attributeOption->id);
+                        })->first();
+
+                } else {
+                    $product = Product::where('model_code', $invoice['skod'])->first();
+                }
+
+                if (!$product) {
+                    $invoiceModel->details()->delete();
+                    $invoiceModel->delete();
+                    break;
+                }
+
+                InvoiceDetail::firstOrCreate([
+                    'invoice_id' => $invoiceModel->id,
+                    'product_id' => $product->id,
+                ], [
+                    'invoice_id' => $invoiceModel->id,
+                    'product_id' => $product->id,
+                    'product_code' => $invoice['skod'] ?? "",
+                    'quantity' => $item['Miktar'] ?? 0,
+                    'unit_name' => $invoice['Birim'] ?? "",
+                    'price' => $invoice['fiyat'] ?? 0,
+                    'tax_rate' => $invoice['KDVORAN'] ?? 0,
+                    'currency' => currency_map($invoice['har_ParaCinsi'] ?? 'TRY'),
+                    'amount_total' => $invoice['Tutar'] ?? 0,
+                    'tax_total' => $invoice['KDVTutar'] ?? 0,
+                    'discount_total' => $invoice['iskTutar'] ?? 0,
+                ]);
+            }
 
         }
 
