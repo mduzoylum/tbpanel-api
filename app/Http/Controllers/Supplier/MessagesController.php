@@ -19,7 +19,7 @@ class MessagesController extends Controller
         return response()->json(['message' => 'Message sent successfully']);
     }
 
-    public function get()
+    public function list()
     {
         return Message::orderBy('created_at', 'asc')->get()->toArray();
     }

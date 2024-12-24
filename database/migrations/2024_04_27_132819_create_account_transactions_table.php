@@ -11,16 +11,16 @@ return new class extends Migration
      */
 public function up()
 {
-    Schema::create('customer_transactions', function (Blueprint $table) {
+    Schema::create('account_transactions', function (Blueprint $table) {
         $table->id();
         $table->string('title');
         $table->decimal('debt', 10, 2)->default(0.00);
         $table->decimal('credit', 10, 2)->default(0.00);
         $table->string('currency');
-        $table->unsignedBigInteger('customer_id');
+        $table->unsignedBigInteger('account_id');
         $table->timestamps();
 
-        $table->foreign('customer_id')->references('id')->on('customers');
+        $table->foreign('account_id')->references('id')->on('accounts');
 
     });
 }
@@ -31,6 +31,6 @@ public function up()
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_transactions');
+        Schema::dropIfExists('account_transactions');
     }
 };

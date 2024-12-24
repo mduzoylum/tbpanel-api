@@ -5,6 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('messages')->name('messages.')->middleware(['auth:sanctum'])->group(function () {
-    Route::get('/get', [MessagesController::class, 'get'])->name('get');
-    Route::post('/set', [MessagesController::class, 'send'])->name('set');
+    Route::get('/list', [MessagesController::class, 'list'])->name('list');
+    Route::post('/set', [MessagesController::class, 'send'])->name('send');
 });

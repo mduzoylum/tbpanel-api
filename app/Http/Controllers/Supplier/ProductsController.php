@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-    public function get(ProductFilter $filter, Request $request)
+    public function __invoke(ProductFilter $filter, Request $request)
     {
         $query = Product::query();
         $query->where('supplier_id', auth()->user()->id);
@@ -20,6 +20,4 @@ class ProductsController extends Controller
 
         return $this->paginateResponse(ProductResource::collection($data), $data);
     }
-
-
 }

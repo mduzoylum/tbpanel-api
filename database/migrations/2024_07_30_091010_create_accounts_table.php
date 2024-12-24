@@ -33,6 +33,12 @@ return new class extends Migration {
             $table->string('identity_number')->nullable();
             $table->string('iban')->nullable();
 
+            $table->foreignId('supplier_id')->nullable();
+            $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('set null');
+
+            $table->foreignId('customer_id')->nullable();
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
+
             $table->foreignId('seller_id')->nullable();
             $table->foreign('seller_id')->references('id')->on('users')->onDelete('set null');
 
