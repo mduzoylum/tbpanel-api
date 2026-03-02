@@ -24,9 +24,9 @@ return new class extends Migration
         $table->timestamps();
 
         $table->foreign('order_id')->references('id')->on('orders');
-        $table->foreign('county_id')->references('id')->on('town');
+        $table->foreign('county_id')->references('id')->on('towns');
         $table->foreign('city_id')->references('id')->on('cities');
-        $table->foreign('town_id')->references('id')->on('town');
+        $table->foreign('town_id')->references('id')->on('towns');
 
     });
 }

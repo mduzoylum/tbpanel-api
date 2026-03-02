@@ -7,6 +7,7 @@ use App\Models\User;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +16,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+
         $this->call(UsersTableSeeder::class);
         $this->call(PermissionsTableSeeder::class);
         $this->call(UserPermissionsTableSeeder::class);
         $this->call(SettingsTableSeeder::class);
         $this->call(PriceFieldsTableSeeder::class);
         $this->call(CurrencyTableSeeder::class);
+
+        Schema::enableForeignKeyConstraints();
     }
 }

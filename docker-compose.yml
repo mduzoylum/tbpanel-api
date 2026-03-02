@@ -27,15 +27,16 @@ services:
         networks:
             - backend
     db:
-        image: postgres:latest
+        image: mysql:8.0
         restart: always
         environment:
-            - POSTGRES_DB=toptancimburada
-            - POSTGRES_USER=toptancimburada
-            - POSTGRES_PASSWORD=123456789
+            - MYSQL_DATABASE=toptancimburada
+            - MYSQL_USER=toptancimburada
+            - MYSQL_PASSWORD=123456789
+            - MYSQL_ROOT_PASSWORD=123456789
         ports:
-            - "5453:5432"
+            - "5453:3306"
         volumes:
-            - ./.docker/conf/postgres/:/docker-entrypoint-initdb.d/
+            - ./.docker/conf/mysql/:/docker-entrypoint-initdb.d/
         networks:
             - backend
