@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotifications;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -55,4 +56,10 @@ class Supplier extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = config('app.supplier_panel') . '/auth/reset-password?reset_token=' . $token . '&email=' . $this->email;
+        $this->notify(new ResetPasswordNotifications($url));
+    }
 }

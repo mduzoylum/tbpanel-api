@@ -1,4 +1,11 @@
 <?php return array (
+  'dedoc/scramble' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Dedoc\\Scramble\\ScrambleServiceProvider',
+    ),
+  ),
   'laravel/sail' => 
   array (
     'providers' => 
@@ -41,15 +48,29 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
+  'spatie/laravel-data' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Spatie\\LaravelData\\LaravelDataServiceProvider',
+    ),
+  ),
   'spatie/laravel-ignition' => 
   array (
+    'aliases' => 
+    array (
+      'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+    ),
     'providers' => 
     array (
       0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     ),
-    'aliases' => 
+  ),
+  'spatie/php-structure-discoverer' => 
+  array (
+    'providers' => 
     array (
-      'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+      0 => 'Spatie\\StructureDiscoverer\\StructureDiscovererServiceProvider',
     ),
   ),
 );

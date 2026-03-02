@@ -18,7 +18,16 @@ class CheckPermission
      * @throws UnauthorizedException
      */
     public function handle($request, Closure $next, $permissionName): Response {
-        if (auth()->check() && auth()->user()->hasPermission($permissionName)) {
+        if (!auth()->check()) {
+            throw new UnauthorizedException();
+        }
+
+        $user = auth()->user();
+        $hasPermission = method_exists($user, 'hasPermissionTo')
+            ? $user->hasPermissionTo($permissionName)
+            : (method_exists($user, 'hasPermission') ? $user->hasPermission($permissionName) : false);
+
+        if ($hasPermission) {
             return $next($request);
         }
 

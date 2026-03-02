@@ -17,6 +17,7 @@ return [
     'password' => 'Hatalı şifre.',
     'throttle' => 'Çok fazla giriş denemesi. Lütfen :seconds saniye sonra tekrar deneyin.',
     'logout' => 'Başarıyla çıkış yaptınız.',
+    'logout_success' => 'Başarıyla çıkış yaptınız.',
     'password_reset_link_sent' => 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
     'reset_password_mail_subject' => 'Şifre Sıfırlama',
     'reset_password_mail_body' => 'Şifrenizi sıfırlamak için aşağıdaki butona tıklayın.',

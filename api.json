@@ -1,0 +1,268 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Laravel",
+        "version": "1.0.0",
+        "description": "TB BE API documentation for admin and supplier endpoints."
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Local"
+        }
+    ],
+    "paths": {
+        "/admin/auth/login": {
+            "post": {
+                "operationId": "admin.auth.login",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`AuthTokenData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/forgot-password": {
+            "post": {
+                "operationId": "admin.auth.forgot-password",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/reset-password": {
+            "post": {
+                "operationId": "admin.auth.reset-password",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/me": {
+            "get": {
+                "operationId": "admin.auth.me",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CurrentUserData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CurrentUserData"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/auth/logout": {
+            "post": {
+                "operationId": "admin.auth.logout",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/supplier/auth/login": {
+            "post": {
+                "operationId": "supplier.auth.login",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`AuthTokenData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/supplier/auth/forgot-password": {
+            "post": {
+                "operationId": "supplier.auth.forgot-password",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/supplier/auth/reset-password": {
+            "post": {
+                "operationId": "supplier.auth.reset-password",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/supplier/auth/me": {
+            "get": {
+                "operationId": "supplier.auth.me",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CurrentUserData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CurrentUserData"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/supplier/auth/logout": {
+            "post": {
+                "operationId": "supplier.auth.logout",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`MessageData`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageData"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AuthTokenData": {
+                "type": "object",
+                "additionalProperties": {},
+                "title": "AuthTokenData"
+            },
+            "CurrentUserData": {
+                "type": "object",
+                "additionalProperties": {},
+                "title": "CurrentUserData"
+            },
+            "MessageData": {
+                "type": "object",
+                "additionalProperties": {},
+                "title": "MessageData"
+            }
+        },
+        "responses": {
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
