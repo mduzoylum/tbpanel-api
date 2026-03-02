@@ -5,21 +5,20 @@ namespace App\Http\Controllers\Supplier;
 use App\Data\Auth\ForgotPasswordData;
 use App\Data\Auth\LoginData;
 use App\Data\Auth\ResetPasswordData;
-use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
+use App\Services\Auth\SupplierAuthService;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private readonly SupplierAuthService $authService
+    ) {}
+
     #[Endpoint(title: 'Supplier Login', description: 'Tedarikci kullanicisini giris yaptirir ve access token doner.')]
     #[BodyParameter('email', 'Tedarikci e-posta adresi', required: true, type: 'string', format: 'email', example: 'supplier@example.com')]
     #[BodyParameter('password', 'Sifre', required: true, type: 'string', format: 'password', example: 'secret123')]
@@ -27,19 +26,7 @@ class AuthController extends Controller
     #[Response(status: 401, type: 'array{message:string}', description: 'Hatali kimlik bilgisi', examples: ['message' => 'Invalid credentials!'])]
     public function login(LoginData $data): array
     {
-        $credentials = [
-            'email' => $data->email,
-            'password' => $data->password,
-        ];
-
-        if (! auth()->guard('supplier')->attempt($credentials)) {
-            throw new UnauthorizedException('Invalid credentials!');
-        }
-
-        /** @var Supplier $supplier */
-        $supplier = auth()->guard('supplier')->user();
-
-        return $this->buildTokenPayload($supplier, 'supplier-token');
+        return $this->authService->login($data);
     }
 
     #[Endpoint(title: 'Supplier Me', description: 'Token sahibi tedarikcinin profil bilgisini doner.')]
@@ -47,19 +34,10 @@ class AuthController extends Controller
     #[Response(status: 401, type: 'array{message:string}', description: 'Yetkisiz istek', examples: ['message' => 'Unauthorized'])]
     public function me(Request $request): array
     {
-        if (! $request->user() instanceof Supplier) {
-            throw new UnauthorizedException('Unauthorized');
-        }
-
         /** @var Supplier $supplier */
         $supplier = $request->user();
 
-        return [
-            'id' => (int) $supplier->id,
-            'name' => (string) ($supplier->name ?? ''),
-            'email' => (string) ($supplier->email ?? ''),
-            'permissions' => $this->resolvePermissions($supplier),
-        ];
+        return $this->authService->me($supplier);
     }
 
     #[Endpoint(title: 'Supplier Logout', description: 'Mevcut access tokeni iptal eder.')]
@@ -67,13 +45,10 @@ class AuthController extends Controller
     #[Response(status: 401, type: 'array{message:string}', description: 'Yetkisiz istek', examples: ['message' => 'Unauthorized'])]
     public function logout(Request $request): array
     {
-        if (! $request->user() instanceof Supplier) {
-            throw new UnauthorizedException('Unauthorized');
-        }
+        /** @var Supplier $supplier */
+        $supplier = $request->user();
 
-        $request->user()->currentAccessToken()?->delete();
-
-        return ['message' => __('auth.logout_success')];
+        return $this->authService->logout($supplier);
     }
 
     #[Endpoint(title: 'Supplier Forgot Password', description: 'Tedarikci kullanici icin sifre sifirlama baglantisi gonderir.')]
@@ -82,15 +57,7 @@ class AuthController extends Controller
     #[Response(status: 422, type: 'array{message:string,errors:array<string,string[]>}', description: 'Validation hatasi')]
     public function forgotPassword(ForgotPasswordData $data): array
     {
-        $payload = ['email' => $data->email];
-
-        $status = Password::broker('suppliers')->sendResetLink($payload);
-
-        if ($status !== Password::RESET_LINK_SENT) {
-            throw new UnauthorizedException(__($status));
-        }
-
-        return ['message' => __('auth.password_reset_link_sent')];
+        return $this->authService->forgotPassword($data);
     }
 
     #[Endpoint(title: 'Supplier Reset Password', description: 'Token ile tedarikci sifresini yeniler.')]
@@ -102,59 +69,6 @@ class AuthController extends Controller
     #[Response(status: 422, type: 'array{message:string,errors:array<string,string[]>}', description: 'Validation hatasi')]
     public function resetPassword(ResetPasswordData $data): array
     {
-        $payload = $data->toArray();
-
-        $status = Password::broker('suppliers')->reset(
-            $payload,
-            function ($supplier, $password): void {
-                $supplier->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
-
-                $supplier->save();
-
-                event(new PasswordReset($supplier));
-            }
-        );
-
-        if ($status !== Password::PASSWORD_RESET) {
-            throw new UnauthorizedException(__($status));
-        }
-
-        return ['message' => __('auth.reset_password_success')];
-    }
-
-    private function buildTokenPayload(Supplier $supplier, string $tokenName): array
-    {
-        if (! in_array(HasApiTokens::class, class_uses_recursive($supplier), true)) {
-            throw new \RuntimeException('Supplier model must use HasApiTokens trait.');
-        }
-
-        $issuedAt = now();
-        $expiration = config('sanctum.expiration');
-        $expiresAt = is_numeric($expiration) ? now()->addMinutes((int) $expiration) : null;
-
-        return [
-            'id' => (int) $supplier->id,
-            'name' => (string) ($supplier->name ?? ''),
-            'email' => (string) ($supplier->email ?? ''),
-            'token' => $supplier->createToken($tokenName, ['*'], $expiresAt)->plainTextToken,
-            'permissions' => $this->resolvePermissions($supplier),
-            'token_iat' => $issuedAt->toDateTimeString(),
-            'token_exp' => $expiresAt?->toDateTimeString(),
-        ];
-    }
-
-    private function resolvePermissions(Supplier $supplier): array
-    {
-        if (method_exists($supplier, 'getPermissionNames')) {
-            return $supplier->getPermissionNames()->values()->toArray();
-        }
-
-        if (method_exists($supplier, 'permissions')) {
-            return $supplier->permissions->pluck('name')->values()->toArray();
-        }
-
-        return [];
+        return $this->authService->resetPassword($data);
     }
 }
