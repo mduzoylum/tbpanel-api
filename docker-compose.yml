@@ -1,42 +1,183 @@
-version: '3'
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - --log.level=DEBUG
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=tbpanel_web
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --certificatesresolvers.le.acme.email=info@tbpanel.com
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/letsencrypt/acme.json
+    networks:
+      - web
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: tbpanel
+      MYSQL_USER: tbpanel
+      MYSQL_PASSWORD: Tbp@n3l_S3cur3!
+      MYSQL_ROOT_PASSWORD: R00t_Tbp@n3l_2026!
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - internal
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    restart: unless-stopped
+
+  api_app:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: tbpanel
+      DB_USERNAME: tbpanel
+      DB_PASSWORD: Tbp@n3l_S3cur3!
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./api/src:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - internal
+    restart: unless-stopped
+
+  api_web:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./api/src:/var/www/html
+      - ./api/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api_app
+    networks:
+      - web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.rule=Host(`api.tbpanel.com`)
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.tls.certresolver=le
+      - traefik.http.services.api.loadbalancer.server.port=80
+    restart: unless-stopped
+
+  api_queue:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=1 --tries=3 --timeout=120
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: tbpanel
+      DB_USERNAME: tbpanel
+      DB_PASSWORD: Tbp@n3l_S3cur3!
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./api/src:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - internal
+    restart: unless-stopped
+
+  api_scheduler:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: tbpanel
+      DB_USERNAME: tbpanel
+      DB_PASSWORD: Tbp@n3l_S3cur3!
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./api/src:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - internal
+    restart: unless-stopped
+
+  admin_web:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./admin/dist:/usr/share/nginx/html:ro
+      - ./admin/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.admin.rule=Host(`admin.tbpanel.com`)
+      - traefik.http.routers.admin.entrypoints=websecure
+      - traefik.http.routers.admin.tls.certresolver=le
+      - traefik.http.services.admin.loadbalancer.server.port=80
+    restart: unless-stopped
+
+  supplier_web:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./supplier/dist:/usr/share/nginx/html:ro
+      - ./supplier/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.supplier.rule=Host(`tbpanel.com`)
+      - traefik.http.routers.supplier.entrypoints=websecure
+      - traefik.http.routers.supplier.tls.certresolver=le
+      - traefik.http.services.supplier.loadbalancer.server.port=80
+    restart: unless-stopped
 
 networks:
-    backend:
-        driver: bridge
+  web:
+    driver: bridge
+  internal:
+    driver: bridge
 
-services:
-    web:
-        image: nginx
-        volumes:
-            - ./.docker/conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
-            - .:/var/www/html
-        ports:
-            - "8083:80"
-        restart: always
-        depends_on:
-            - php
-        networks:
-            - backend
-    php:
-        build: .docker
-        restart: always
-        volumes:
-            - ./.docker/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
-            - ./.docker/conf/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-            - .:/var/www/html
-        networks:
-            - backend
-    db:
-        image: mysql:8.0
-        restart: always
-        environment:
-            - MYSQL_DATABASE=toptancimburada
-            - MYSQL_USER=toptancimburada
-            - MYSQL_PASSWORD=123456789
-            - MYSQL_ROOT_PASSWORD=123456789
-        ports:
-            - "5453:3306"
-        volumes:
-            - ./.docker/conf/mysql/:/docker-entrypoint-initdb.d/
-        networks:
-            - backend
+volumes:
+  mysql_data:
+  redis_data:
