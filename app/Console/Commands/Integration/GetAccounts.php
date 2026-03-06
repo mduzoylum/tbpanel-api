@@ -4,6 +4,7 @@ namespace App\Console\Commands\Integration;
 
 use App\Models\Setting;
 use App\Services\Integrations\IntegrationProviderFactory;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class GetAccounts extends Command
@@ -33,15 +34,17 @@ class GetAccounts extends Command
             throw new \Exception('account_last_updated_at setting not found');
         }
 
+        $startDateCarbon = Carbon::parse($startDate);
         $params = [
-            "start_date" => $startDate,
-            "end_date" => date('Y-m-d H:i:s', strtotime($startDate. ' +1 day'))
+            "start_date" => $startDateCarbon->toDateTimeString(),
+            "end_date" => $startDateCarbon->copy()->addDay()->toDateTimeString()
         ];
 
 
         while (true) {
-            if($params['end_date'] > date('Y-m-d H:i:s')) {
-                $params['end_date'] = date('Y-m-d H:i:s');
+            $now = Carbon::now();
+            if (Carbon::parse($params['end_date'])->greaterThan($now)) {
+                $params['end_date'] = $now->toDateTimeString();
             }
 
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
@@ -49,9 +52,9 @@ class GetAccounts extends Command
             Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']]);
 
             $params['start_date'] = $params['end_date'];
-            $params['end_date'] = date('Y-m-d H:i:s', strtotime($params['end_date'] . ' +1 day'));
+            $params['end_date'] = Carbon::parse($params['end_date'])->addDay()->toDateTimeString();
 
-            if ($params['start_date'] > date('Y-m-d H:i:s')) {
+            if (Carbon::parse($params['start_date'])->greaterThan(Carbon::now())) {
                 break;
             }
         }
