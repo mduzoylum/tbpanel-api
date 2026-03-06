@@ -24,6 +24,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'SSH'
             cd /opt/tbpanel
+            docker compose exec -T api_app composer install --no-dev --optimize-autoloader
             docker compose up -d --build api_app api_web api_queue api_scheduler
             docker compose exec -T api_app php artisan migrate --force
             docker compose exec -T api_app php artisan config:cache
