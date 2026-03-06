@@ -16,7 +16,7 @@ jobs:
 
       - name: Sync to server
         run: |
-          rsync -az --delete --exclude='.git' --exclude='.env' \
+          rsync -az --delete --exclude='.git' --exclude='.env' --exclude='vendor' \
             -e "ssh -o StrictHostKeyChecking=no" \
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/tbpanel/api/src/
 
@@ -24,8 +24,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'SSH'
             cd /opt/tbpanel
-            docker compose exec -T api_app composer install --no-dev --optimize-autoloader
             docker compose up -d --build api_app api_web api_queue api_scheduler
+            sleep 5
+            docker compose exec -T api_app composer install --no-dev --optimize-autoloader
             docker compose exec -T api_app php artisan migrate --force
             docker compose exec -T api_app php artisan config:cache
             docker compose exec -T api_app php artisan route:cache || true
