@@ -35,7 +35,7 @@ class GetInvoices extends Command
         }
 
         $startDateCarbon = Carbon::parse($startDate);
-        $syncUntil = Carbon::now();
+        $syncUntil = Carbon::now()->startOfSecond();
         $params = [
             "start_date" => $startDateCarbon->toDateTimeString(),
             "end_date" => $startDateCarbon->copy()->addDay()->toDateTimeString()
