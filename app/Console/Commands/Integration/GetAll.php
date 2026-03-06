@@ -35,16 +35,16 @@ class GetAll extends Command
         }
 
         $startDateCarbon = Carbon::parse($startDate);
+        $syncUntil = Carbon::now();
         $params = [
             "start_date" => $startDateCarbon->toDateTimeString(),
             "end_date" => $startDateCarbon->copy()->addDay()->toDateTimeString()
         ];
 
 
-        while (true) {
-            $now = Carbon::now();
-            if (Carbon::parse($params['end_date'])->greaterThan($now)) {
-                $params['end_date'] = $now->toDateTimeString();
+        while (Carbon::parse($params['start_date'])->lessThan($syncUntil)) {
+            if (Carbon::parse($params['end_date'])->greaterThan($syncUntil)) {
+                $params['end_date'] = $syncUntil->toDateTimeString();
             }
 
             IntegrationProviderFactory::create('korgun')->getProducts($params);
@@ -56,10 +56,6 @@ class GetAll extends Command
 
             $params['start_date'] = $params['end_date'];
             $params['end_date'] = Carbon::parse($params['end_date'])->addDay()->toDateTimeString();
-
-            if (Carbon::parse($params['start_date'])->greaterThan(Carbon::now())) {
-                break;
-            }
         }
     }
 
