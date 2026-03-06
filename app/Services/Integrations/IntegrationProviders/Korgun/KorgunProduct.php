@@ -23,8 +23,8 @@ class KorgunProduct extends IntegrationProviderAbstract
     public function getProducts($params)
     {
         $data = [
-            "tar1" => date('d.m.Y H:i:s', strtotime($params["start_date"])) ?? "",
-            "tar2" => date('d.m.Y H:i:s', strtotime($params["end_date"])) ?? "",
+            "tar1" => Carbon::parse($params["start_date"])->format('d.m.Y H:i:s'),
+            "tar2" => Carbon::parse($params["end_date"])->format('d.m.Y H:i:s'),
             "skod1" => $params["product_code"] ?? "",
             "skod2" => $params["product_code"] ?? "",
             "FiyTip1" => "",

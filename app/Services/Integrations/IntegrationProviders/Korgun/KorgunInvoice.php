@@ -27,8 +27,8 @@ class KorgunInvoice
     {
 
         $data = [
-            "FatTarih1" => date('d.m.Y H:i:s', strtotime($params["start_date"])) ?? "",
-            "FatTarih2" => date('d.m.Y H:i:s', strtotime($params["end_date"])) ?? "",
+            "FatTarih1" => Carbon::parse($params["start_date"])->format('d.m.Y H:i:s'),
+            "FatTarih2" => Carbon::parse($params["end_date"])->format('d.m.Y H:i:s'),
             "CariKod" => '',
             "Location" => '',
             "FaturaTip" => '',

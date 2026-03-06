@@ -30,29 +30,29 @@ class GetAccounts extends Command
     {
         $startDate = Setting::where('code', 'account_last_updated_at')->first()->value;
 
-        if($startDate == null) {
+        if ($startDate == null) {
             throw new \Exception('account_last_updated_at setting not found');
         }
 
         $startDateCarbon = Carbon::parse($startDate);
         $syncUntil = Carbon::now()->startOfSecond();
         $params = [
-            "start_date" => $startDateCarbon->toDateTimeString(),
-            "end_date" => $startDateCarbon->copy()->addDay()->toDateTimeString()
+            "start_date" => $startDateCarbon->copy(),
+            "end_date" => $startDateCarbon->copy()->addHours()
         ];
 
 
-        while (Carbon::parse($params['start_date'])->lessThan($syncUntil)) {
-            if (Carbon::parse($params['end_date'])->greaterThan($syncUntil)) {
-                $params['end_date'] = $syncUntil->toDateTimeString();
+        while ($params['start_date']->lessThan($syncUntil)) {
+            if ($params['end_date']->greaterThan($syncUntil)) {
+                $params['end_date'] = $syncUntil->copy();
             }
 
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
 
-            Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']]);
+            Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']->toDateTimeString()]);
 
-            $params['start_date'] = $params['end_date'];
-            $params['end_date'] = Carbon::parse($params['end_date'])->addDay()->toDateTimeString();
+            $params['start_date'] = $params['end_date']->copy();
+            $params['end_date'] = $params['end_date']->copy()->addHours(1);
         }
     }
 

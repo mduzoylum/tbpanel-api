@@ -2,6 +2,7 @@
 
 use App\Models\Currency;
 use App\Models\CurrencyHistory;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('generate_code_from_name')) {
@@ -38,7 +39,7 @@ if (!function_exists('exchange_rate')) {
         }
 
         if (!$date) {
-            $date = date('Y-m-d');
+            $date = Carbon::today()->toDateString();
         }
 
         $currency = Currency::where('code', $from)->first();
@@ -91,8 +92,9 @@ if (!function_exists('exchange_rate')) {
 if (!function_exists('save_currency_history')) {
     function save_currency_history($currency, $defaultCurrency, $date)
     {
-        $formattedDate = date('dmY', strtotime($date));
-        $yearMonth = date('Ym', strtotime($date));
+        $dateCarbon = Carbon::parse($date);
+        $formattedDate = $dateCarbon->format('dmY');
+        $yearMonth = $dateCarbon->format('Ym');
 
 
         $response = file_get_contents("https://www.tcmb.gov.tr/kurlar/" . $yearMonth . "/" . $formattedDate . ".xml?");

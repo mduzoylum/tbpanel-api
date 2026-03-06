@@ -37,14 +37,14 @@ class GetAll extends Command
         $startDateCarbon = Carbon::parse($startDate);
         $syncUntil = Carbon::now()->startOfSecond();
         $params = [
-            "start_date" => $startDateCarbon->toDateTimeString(),
-            "end_date" => $startDateCarbon->copy()->addDay()->toDateTimeString()
+            "start_date" => $startDateCarbon->copy(),
+            "end_date" => $startDateCarbon->copy()->addDay()
         ];
 
 
-        while (Carbon::parse($params['start_date'])->lessThan($syncUntil)) {
-            if (Carbon::parse($params['end_date'])->greaterThan($syncUntil)) {
-                $params['end_date'] = $syncUntil->toDateTimeString();
+        while ($params['start_date']->lessThan($syncUntil)) {
+            if ($params['end_date']->greaterThan($syncUntil)) {
+                $params['end_date'] = $syncUntil->copy();
             }
 
             IntegrationProviderFactory::create('korgun')->getProducts($params);
@@ -52,10 +52,10 @@ class GetAll extends Command
             IntegrationProviderFactory::create('korgun')->getOrders($params);
             IntegrationProviderFactory::create('korgun')->getInvoices($params);
 
-            Setting::where('code', 'integration_last_updated_at')->update(['value' => $params['end_date']]);
+            Setting::where('code', 'integration_last_updated_at')->update(['value' => $params['end_date']->toDateTimeString()]);
 
-            $params['start_date'] = $params['end_date'];
-            $params['end_date'] = Carbon::parse($params['end_date'])->addDay()->toDateTimeString();
+            $params['start_date'] = $params['end_date']->copy();
+            $params['end_date'] = $params['end_date']->copy()->addDay();
         }
     }
 
