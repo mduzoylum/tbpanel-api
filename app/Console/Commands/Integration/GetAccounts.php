@@ -38,7 +38,7 @@ class GetAccounts extends Command
         $syncUntil = Carbon::now()->startOfSecond();
         $params = [
             "start_date" => $startDateCarbon->copy(),
-            "end_date" => $startDateCarbon->copy()->addHours()
+            "end_date" => $startDateCarbon->copy()->addDay()
         ];
 
 
@@ -48,11 +48,12 @@ class GetAccounts extends Command
             }
 
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
+            IntegrationProviderFactory::create('korgun')->getAccountTransactions($params);
 
             Setting::where('code', 'account_last_updated_at')->update(['value' => $params['end_date']->toDateTimeString()]);
 
             $params['start_date'] = $params['end_date']->copy();
-            $params['end_date'] = $params['end_date']->copy()->addHours(1);
+            $params['end_date'] = $params['end_date']->copy()->addDay();
         }
     }
 

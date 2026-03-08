@@ -49,6 +49,7 @@ class GetAll extends Command
 
             IntegrationProviderFactory::create('korgun')->getProducts($params);
             IntegrationProviderFactory::create('korgun')->getAccounts($params);
+            IntegrationProviderFactory::create('korgun')->getAccountTransactions($params);
             IntegrationProviderFactory::create('korgun')->getOrders($params);
             IntegrationProviderFactory::create('korgun')->getInvoices($params);
 

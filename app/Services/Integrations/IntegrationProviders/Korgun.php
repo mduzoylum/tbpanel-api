@@ -5,6 +5,7 @@ namespace App\Services\Integrations\IntegrationProviders;
 use App\Services\Integrations\IntegrationProviderAbstract;
 use App\Services\Integrations\IntegrationProviderInterface;
 use App\Services\Integrations\IntegrationProviders\Korgun\KorgunAccount;
+use App\Services\Integrations\IntegrationProviders\Korgun\KorgunAccountTransaction;
 use App\Services\Integrations\IntegrationProviders\Korgun\KorgunInvoice;
 use App\Services\Integrations\IntegrationProviders\Korgun\KorgunOrder;
 use App\Services\Integrations\IntegrationProviders\Korgun\KorgunProduct;
@@ -32,6 +33,11 @@ class Korgun implements IntegrationProviderInterface
     public function getAccounts($params)
     {
         return (new KorgunAccount($this->client))->getAccounts($params);
+    }
+
+    public function getAccountTransactions($params)
+    {
+        return (new KorgunAccountTransaction($this->client))->getAccountTransactions($params);
     }
 
     public function getOrders($params)
